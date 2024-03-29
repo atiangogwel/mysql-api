@@ -39,8 +39,21 @@ const deleteRecipeById = (recipeId, callback) => {
     });
   };
   
+  const updateRecipeById = (recipeId, updatedRecipeData, callback) => {
+    const { name, ingredients, instructions } = updatedRecipeData;
+    const query = 'UPDATE recipe SET name = ?, ingredients = ?, instructions = ? WHERE recipe_id = ?';
+    pool.query(query, [name, ingredients, instructions, recipeId], (error, results) => {
+      if (error) {
+        callback(error, null);
+        return;
+      }
+      callback(null, results);
+    });
+  };
+
 module.exports = {
   getAllRecipes,
   deleteRecipeById,
-  getRecipeById
+  getRecipeById,
+  updateRecipeById
 };
