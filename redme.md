@@ -7,5 +7,7 @@ Instructions
 
 Install dependencies:
 npm install
-run: node index.js(within src directory)
+
+run: 
+node index.js(within src directory)
 
