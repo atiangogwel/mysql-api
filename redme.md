@@ -5,6 +5,8 @@ This is a basic JavaScript application that demonstrates user authentication usi
 
 Instructions
 
+Change the database credentials in dbConfig.js to match your database
+
 Install dependencies:
 npm install
 
