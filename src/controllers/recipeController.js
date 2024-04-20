@@ -1,9 +1,21 @@
-const { getAllRecipes, getRecipeById, updateRecipeById, deleteRecipeById } = require('../Queries/recipeQuery');
+const { AddRecipe, getAllRecipes, getRecipeById, updateRecipeById, deleteRecipeById, getRecipesByUserId } = require('../Queries/recipeQuery');
 
+const AddRecipeController = async (req, res) => {
+  const { name, ingredients, instructions, userID } = req.body;
+
+  try {
+    // Call the AddRecipe function to insert the new recipe
+    const recipeId = await AddRecipe(name, ingredients, instructions, userID);
+    res.json({ recipeId: recipeId, message: 'Recipe added successfully' });
+  } catch (error) {
+    console.error('Error adding recipe:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 // Controller function to handle fetching all recipes
 const getAllRecipesController = async (req, res) => {
   try {
-    const results = await getAllRecipes();
+    const results = await getAllRecipes(); 
     res.json(results);
   } catch (error) {
     console.error("Error fetching recipes:", error);
@@ -17,15 +29,16 @@ const deleteRecipeController = async (req, res) => {
   try {
     const results = await deleteRecipeById(recipeId);
     if (results.affectedRows === 0) {
-      res.status(404).json({ message: `Recipe with ID ${recipeId} not found` });
+      res.status(404).json({ message: `Recipe not found` });
     } else {
-      res.json({ message: `Recipe with ID ${recipeId} deleted successfully` });
+      res.json({ message: `Recipe deleted successfully` });
     }
   } catch (error) {
     console.error("Error deleting recipe:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 // Controller function to fetch a recipe by ID
 const getRecipeByIdController = async (req, res) => {
@@ -45,25 +58,52 @@ const getRecipeByIdController = async (req, res) => {
 
 // Controller function to update a recipe by ID
 const updateRecipeController = async (req, res) => {
-  const recipeId = req.params.recipe_id;
-  const updatedRecipeData = req.body;
+  const recipeId = req.params.recipe_id; // Get the recipe ID from request parameters
+  const updatedRecipeData = req.body; // Get the updated recipe data from request body
   
   try {
-    const results = await updateRecipeById(recipeId, updatedRecipeData);
-    if (results.affectedRows === 0) {
+    // Check if the recipe with the given ID exists
+    const existingRecipe = await getRecipeById(recipeId);
+    if (!existingRecipe) {
+      //else return a 404 error
       res.status(404).json({ message: `Recipe with ID ${recipeId} not found` });
-    } else {
-      res.json({ message: `Recipe with ID ${recipeId} updated successfully` });
+      return;
     }
+    // Update the recipe 
+    await updateRecipeById(recipeId, updatedRecipeData);
+
+    // Send a success response
+    res.json({ message: `Recipe with ID ${recipeId} updated successfully` });
   } catch (error) {
+    // If an error occurs during the update process, send a 500 error response
     console.error("Error updating recipe:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
+
+// Controller function to fetch recipes by user ID
+const getRecipesByUserIdController = async (req, res) => {
+  const userId = req.params.user_id;
+  try {
+    const results = await getRecipesByUserId(userId);
+    if (results.length === 0) {
+      res.status(200).json({ message: `No recipes found}` });
+    } else {
+      res.json(results);
+    }
+  } catch (error) {
+    console.error("Error fetching recipes by user ID:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
 module.exports = {
   getAllRecipesController,
   deleteRecipeController,
   getRecipeByIdController,
-  updateRecipeController
+  updateRecipeController,
+  getRecipesByUserIdController,
+  AddRecipeController
 };
