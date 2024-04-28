@@ -6,6 +6,8 @@ This is a basic JavaScript application that demonstrates user authentication usi
 
 Change the database credentials in dbConfig.js to match your database
 
+create a database named 'YurRecipe' and import the provided sql file 
+
 **Install dependencies**:
 npm install
 
