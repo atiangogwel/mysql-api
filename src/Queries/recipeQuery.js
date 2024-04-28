@@ -2,7 +2,7 @@ const pool = require('../dbConfig');
 
 // Create the recipe table if it does not exist
 const createRecipeTableQuery = `
-  CREATE TABLE IF NOT EXISTS ecipe (
+  CREATE TABLE IF NOT EXISTS recipe (
     recipe_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     ingredients TEXT,
@@ -11,6 +11,31 @@ const createRecipeTableQuery = `
     FOREIGN KEY (userID) REFERENCES users(userID)
   )
 `;
+
+// Wrap pool.query in a function that returns a promise
+const executeQuery = (query) => {
+  return new Promise((resolve, reject) => {
+    pool.query(query, (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    });
+  });
+};
+
+// Use async/await to execute the query
+const execute = async () => {
+  try {
+    const results = await executeQuery(createRecipeTableQuery);
+    console.log('Recipe table created or already exists');
+  } catch (error) {
+    console.error('Error creating recipe table:', error);
+  }
+};
+
+execute();
 
 // Define the SQL query to insert a new recipe
 const AddRecipe = (name, ingredients, instructions, userID) => {
@@ -25,14 +50,7 @@ const AddRecipe = (name, ingredients, instructions, userID) => {
     });
   });
 };
-// Execute the query to create the table
-pool.query(createRecipeTableQuery, (error, results) => {
-  if (error) {
-    console.error('Error creating recipe table:', error);
-  } else {
-    console.log('Recipe table created or already exists');
-  }
-});
+
 
 const getAllRecipes = (callback) => {
   const query = `
@@ -81,6 +99,38 @@ const deleteRecipeById = (recipeId) => {
   });
 };
 
+//add recipe review
+const AddRecipeReview = (recipeId, review, userID) => {
+  return new Promise((resolve, reject) => {
+    const query = 'INSERT INTO reviews (recipe_id, review_text, userID) VALUES (?, ?, ?)';
+    pool.query(query, [recipeId, review, userID], (error, results) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(results.insertId);
+    });
+  });
+};
+
+//get reviews
+const getReviewsWithReviewer = (recipeId) => {
+  return new Promise((resolve, reject) => {
+    const query = `
+    SELECT r.review_id, r.review_text, CONCAT(u.first_name, ' ', u.last_name) AS Reviewer
+    FROM reviews AS r
+    INNER JOIN users AS u ON r.userID = u.userID
+    WHERE r.recipe_id = ?
+    `;
+    pool.query(query, [recipeId], (error, results) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(results);
+    });
+  });
+};
 
 
 const getRecipeById = (recipeId) => {
@@ -158,5 +208,7 @@ module.exports = {
   getRecipeById,
   updateRecipeById,
   getRecipesByUserId,
-  AddRecipe
+  AddRecipe,
+  AddRecipeReview,
+  getReviewsWithReviewer
 };

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {AddRecipeController, getRecipesByUserIdController, getAllRecipesController, getRecipeByIdController,updateRecipeController, deleteRecipeController } = require('../controllers/recipeController');
+const {getReviewsWithReviewerController,AddRecipeReviewController,AddRecipeController,getRecipesByUserIdController,getAllRecipesController, getRecipeByIdController,updateRecipeController, deleteRecipeController } = require('../controllers/recipeController');
 
 // GET all recipes
 router.get('/recipes', getAllRecipesController);
@@ -20,5 +20,10 @@ router.delete('/recipes/:recipe_id', deleteRecipeController);
 
 //get recipe asscociated with a given user
 router.get('/recipes/user/:user_id', getRecipesByUserIdController);
+
+//add recipe review
+router.post('/recipes/add_review/:recipe_id', AddRecipeReviewController);
+//get reviews
+router.get('/recipes/get_reviews/:recipe_id', getReviewsWithReviewerController);
 
 module.exports = router;

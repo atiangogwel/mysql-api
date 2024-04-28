@@ -1,4 +1,4 @@
-const { AddRecipe, getAllRecipes, getRecipeById, updateRecipeById, deleteRecipeById, getRecipesByUserId } = require('../Queries/recipeQuery');
+const {getReviewsWithReviewer,AddRecipeReview,AddRecipe, getAllRecipes, getRecipeById, updateRecipeById, deleteRecipeById, getRecipesByUserId } = require('../Queries/recipeQuery');
 
 const AddRecipeController = async (req, res) => {
   const { name, ingredients, instructions, userID } = req.body;
@@ -73,7 +73,7 @@ const updateRecipeController = async (req, res) => {
     await updateRecipeById(recipeId, updatedRecipeData);
 
     // Send a success response
-    res.json({ message: `Recipe with ID ${recipeId} updated successfully` });
+    res.json({ message: `Recipe updated successfully` });
   } catch (error) {
     // If an error occurs during the update process, send a 500 error response
     console.error("Error updating recipe:", error);
@@ -98,6 +98,33 @@ const getRecipesByUserIdController = async (req, res) => {
   }
 };
 
+const AddRecipeReviewController = async (req, res) => {
+  const { recipe_id } = req.params;
+  const { review_text,userID } = req.body;
+
+  try {
+    const reviewId = await AddRecipeReview(recipe_id, review_text, userID); // Passing userID to the function
+    res.json({ reviewId: reviewId, message: 'Review added successfully' });
+  } catch (error) {
+    console.error('Error adding review:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+const getReviewsWithReviewerController = async (req, res) => {
+  const { recipe_id } = req.params;
+
+  try {
+    const reviews = await getReviewsWithReviewer(recipe_id);
+    res.json({ reviews });
+  } catch (error) {
+    console.error('Error retrieving reviews:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
 
 module.exports = {
   getAllRecipesController,
@@ -105,5 +132,7 @@ module.exports = {
   getRecipeByIdController,
   updateRecipeController,
   getRecipesByUserIdController,
-  AddRecipeController
+  AddRecipeController,
+  AddRecipeReviewController,
+  getReviewsWithReviewerController
 };
