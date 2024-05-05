@@ -64,32 +64,73 @@ const getAllUsers = () => {
 
 // Function to update a user by ID
 const updateUser = (userID, updatedUserData) => {
+  // Extract updated fields from updatedUserData
   const { last_name, first_name, email, password } = updatedUserData;
 
   return new Promise((resolve, reject) => {
-    // Hash the password using bcrypt
-    bcrypt.hash(password, 10, (err, hash) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+    if (!last_name && !first_name && !email && !password) {
+      reject(new Error('No fields provided for update.'));
+      return;
+    }
 
-      // Update the user in the database with the hashed password
-      const query = 'UPDATE users SET last_name = ?, first_name = ?, email = ?, password = ? WHERE userID = ?';
-      pool.query(query, [last_name, first_name, email, hash, userID], (error, results) => {
+    // Construct the SQL query based on provided fields
+    let query = 'UPDATE users SET';
+    const params = [];
+    if (last_name) {
+      query += ' last_name = ?,';
+      params.push(last_name);
+    }
+    if (first_name) {
+      query += ' first_name = ?,';
+      params.push(first_name);
+    }
+    if (email) {
+      query += ' email = ?,';
+      params.push(email);
+    }
+    if (password) {
+      // Hash the password using bcrypt
+      bcrypt.hash(password, 10, (err, hash) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        query += ' password = ?,';
+        params.push(hash);
+        // Remove the trailing comma from the query string
+        query = query.slice(0, -1);
+        query += ' WHERE userID = ?';
+        params.push(userID);
+        // Execute the query
+        pool.query(query, params, (error, results) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          // If the user was successfully updated, generate a new JWT token
+          const token = jwt.sign({ userID: userID }, JWT_SECRET, { expiresIn: '1h' });
+          resolve({ results, token }); 
+        });
+      });
+    } else {
+      query = query.slice(0, -1);
+      query += ' WHERE userID = ?';
+      params.push(userID);
+      // Execute the query
+      pool.query(query, params, (error, results) => {
         if (error) {
           reject(error);
           return;
         }
-
         // If the user was successfully updated, generate a new JWT token
         const token = jwt.sign({ userID: userID }, JWT_SECRET, { expiresIn: '1h' });
-
-        resolve({ results, token }); // Return the updated user data and the new token
+        resolve({ results, token }); 
       });
-    });
+    }
   });
 };
+
+
 createUserTable();
 module.exports = {
   createUser,

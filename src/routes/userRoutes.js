@@ -6,6 +6,6 @@ const {createUserController,getAllUsersController, getUserByIdController,updateU
 
 router.post('/users', createUserController);
 router.get('/users', getAllUsersController);
-router.put('/users/:userID', updateUserController);
+router.patch('/users/update/:userID', updateUserController);
 
 module.exports = router;

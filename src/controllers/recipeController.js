@@ -75,7 +75,6 @@ const updateRecipeController = async (req, res) => {
     // Send a success response
     res.json({ message: `Recipe updated successfully` });
   } catch (error) {
-    // If an error occurs during the update process, send a 500 error response
     console.error("Error updating recipe:", error);
     res.status(500).json({ error: "Internal server error" });
   }

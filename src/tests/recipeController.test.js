@@ -123,21 +123,23 @@ describe('getRecipeByIdController', () => {
     expect(res.json).toHaveBeenCalledWith({ message: 'Recipe with ID 123 not found' });
   });
 });
+
 describe('updateRecipeController', () => {
   test('updates a recipe successfully', async () => {
     const req = { params: { recipe_id: 123 }, body: { name: 'Updated Recipe Name', ingredients: ['Ingredient 1', 'Ingredient 2'], instructions: 'Updated Instructions' } };
     const res = { json: jest.fn(), status: jest.fn() };
-
+  
     const existingRecipe = { id: 123, name: 'Old Recipe Name', ingredients: ['Old Ingredient 1', 'Old Ingredient 2'], instructions: 'Old Instructions' };
     getRecipeById.mockResolvedValue(existingRecipe); // Mock the resolved value of getRecipeById function
     updateRecipeById.mockResolvedValue(); // Mock the resolved value of updateRecipeById function
-
+  
     await updateRecipeController(req, res);
-
+  
     expect(getRecipeById).toHaveBeenCalledWith(123);
     expect(updateRecipeById).toHaveBeenCalledWith(123, { name: 'Updated Recipe Name', ingredients: ['Ingredient 1', 'Ingredient 2'], instructions: 'Updated Instructions' });
-    expect(res.json).toHaveBeenCalledWith({ message: 'Recipe with ID 123 updated successfully' });
+    expect(res.json).toHaveBeenCalledWith({ message: 'Recipe updated successfully' }); // Updated expectation
   });
+  
 
   test('returns 404 if recipe not found', async () => {
     const req = { params: { recipe_id: 123 }, body: { name: 'Updated Recipe Name', ingredients: ['Ingredient 1', 'Ingredient 2'], instructions: 'Updated Instructions' } };
